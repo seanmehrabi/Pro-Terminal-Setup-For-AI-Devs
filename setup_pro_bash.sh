@@ -129,6 +129,39 @@ install_plugins() {
     install_plugin "$base" zsh-completions https://github.com/zsh-users/zsh-completions
 }
 
+sources_omz() {
+    grep -q 'oh-my-zsh\.sh' "$1" 2>/dev/null
+}
+
+# ZSH_THEME and plugins=() only take effect if they are set *before*
+# oh-my-zsh.sh is sourced, so insert above that line when it already exists.
+add_config_line() {
+    local file="$1" line="$2" tmp
+    if sources_omz "$file"; then
+        tmp="$(mktemp)"
+        awk -v ins="$line" '
+            !inserted && /oh-my-zsh\.sh/ { print ins; inserted=1 }
+            { print }
+        ' "$file" > "$tmp"
+        cat "$tmp" > "$file"
+        rm -f "$tmp"
+    else
+        printf '\n%s\n' "$line" >> "$file"
+    fi
+}
+
+# Oh My Zsh is installed with KEEP_ZSHRC=yes, so a pre-existing ~/.zshrc
+# (WSL/Ubuntu creates one) is left untouched and never loads the framework.
+# Without this, ZSH_THEME is ignored and `p10k` is never defined.
+ensure_omz_bootstrap() {
+    local file="$1"
+    if sources_omz "$file"; then
+        return
+    fi
+    log "Adding Oh My Zsh bootstrap to $file"
+    printf '\nexport ZSH="$HOME/.oh-my-zsh"\nsource "$ZSH/oh-my-zsh.sh"\n' >> "$file"
+}
+
 ensure_theme() {
     local file="$1"
     if grep -q '^ZSH_THEME=' "$file" 2>/dev/null; then
@@ -140,7 +173,7 @@ ensure_theme() {
             rm -f "${file}.bak"
         fi
     else
-        printf '\nZSH_THEME="powerlevel10k/powerlevel10k"\n' >> "$file"
+        add_config_line "$file" 'ZSH_THEME="powerlevel10k/powerlevel10k"'
     fi
 }
 
@@ -156,7 +189,7 @@ ensure_plugins_line() {
             rm -f "${file}.bak"
         fi
     else
-        printf '\n%s\n' "$desired" >> "$file"
+        add_config_line "$file" "$desired"
     fi
 }
 
@@ -273,7 +306,14 @@ update_zshrc() {
     backup_file "$ZSHRC"
     ensure_theme "$ZSHRC"
     ensure_plugins_line "$ZSHRC"
+    # Must run after theme/plugins so those are set above the source line,
+    # and before the managed block so our aliases win over the framework's.
+    ensure_omz_bootstrap "$ZSHRC"
     write_managed_block "$ZSHRC"
+
+    if ! sources_omz "$ZSHRC"; then
+        warn "$ZSHRC still does not source oh-my-zsh.sh; the theme will not load."
+    fi
 }
 
 setup_fzf_install_script() {
