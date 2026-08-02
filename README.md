@@ -174,6 +174,32 @@ Themes and plugins:
 
 ---
 
+## Troubleshooting
+
+**`line 3: set: pipefail: invalid option name`** (often shown garbled, e.g. `: invalid option namene 3: set: pipefail`)
+
+The script was copied or checked out with Windows CRLF line endings, so bash reads
+`pipefail\r` instead of `pipefail` — and the stray carriage return scrambles the
+error message itself. The script now detects this and re-runs a corrected copy,
+but you can also fix the file in place:
+
+```bash
+sed -i 's/\r$//' setup_pro_bash.sh
+```
+
+To prevent it entirely, clone with the repo's `.gitattributes` in place (it pins
+`*.sh` to LF), or re-check-out an existing clone:
+
+```bash
+git rm --cached -r . && git reset --hard
+```
+
+**`bad interpreter: /usr/bin/env bash^M`** is the same problem hitting the shebang
+when the script is run as `./setup_pro_bash.sh`. Apply the `sed` fix above, or run
+it as `bash setup_pro_bash.sh` and let the self-heal handle it.
+
+---
+
 ## Safety & re-runs
 
 | Behavior | Detail |
