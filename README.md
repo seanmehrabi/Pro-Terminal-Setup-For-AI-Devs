@@ -124,6 +124,7 @@ bash setup_pro_bash.sh
 | `--brew` | Linux: install/use Homebrew for the toolbox — same current tool versions as macOS. **Recommended on WSL**; plain apt skips whatever your Ubuntu release lacks (often `eza`, a modern `fzf`) with a warning. Auto-used if brew is already installed. |
 | `--reinstall` | Back up the existing Oh My Zsh install, plugins and prompt preset to `~/.pro-terminal-setup-backup-<timestamp>/`, then install everything clean. Nothing is ever deleted. |
 | `--update` | Refresh an existing install in place without asking (what re-runs do by default when non-interactive). |
+| `--insecure-ssl` | **Last resort** for TLS-broken environments: disables certificate verification for this run's downloads. Try a plain run first — the script auto-repairs the CA store and, on WSL, imports the Windows certificate store, which properly fixes corporate SSL inspection. |
 | `-h`, `--help` | Usage, including recovery notes. |
 
 ### If something goes wrong
@@ -254,6 +255,22 @@ Themes and plugins:
 ---
 
 ## Troubleshooting
+
+**`curl: (60) SSL certificate problem: unable to get local issuer certificate`**
+
+Very common on corporate WSL machines: an SSL-inspecting proxy (Zscaler, Netskope, …)
+re-signs all HTTPS traffic with a company root CA that Windows trusts but your fresh
+Ubuntu doesn't. The script now fixes this itself, in order:
+
+1. Reinstalls/refreshes `ca-certificates` (apt works over plain http, so this succeeds
+   even while TLS is broken)
+2. On WSL, exports every trusted root certificate from the **Windows** certificate store
+   via PowerShell and adds them to Ubuntu's trust store (`update-ca-certificates`) — after
+   this, curl, git, brew and everything else trust the corporate proxy permanently
+
+Just re-run the script; if both repairs fail it prints the remaining options (get the CA
+file from IT, fix WSL clock drift with `sudo hwclock -s`, or — on a network you trust —
+`--insecure-ssl` as a last resort).
 
 **`zsh: command not found: p10k`** (and a plain `hostname%` prompt instead of a themed one)
 
