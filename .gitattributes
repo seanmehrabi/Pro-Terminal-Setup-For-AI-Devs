@@ -1,0 +1,12 @@
+# Last matching pattern wins, so the catch-all goes first.
+
+# Normalize everything to LF in the repo and in the working tree.
+*       text=auto eol=lf
+
+# Shell scripts MUST have LF endings everywhere, including Windows checkouts.
+# CRLF makes bash fail with: line 3: set: pipefail: invalid option name
+*.sh    text eol=lf
+*.bash  text eol=lf
+
+# PowerShell is happiest with CRLF on Windows.
+*.ps1   text eol=crlf

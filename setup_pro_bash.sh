@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 # Professional terminal bootstrap for macOS and Debian/Ubuntu (incl. WSL).
+#
+# CRLF self-heal: a Windows checkout gives this file \r line endings, which makes
+# bash choke on the next line ("set: pipefail: invalid option name"). Re-run a
+# stripped copy instead. Keep the check on ONE line so that when the file *does*
+# have CRLF, the stray \r lands harmlessly inside this trailing comment.
+if [ -f "$0" ] && grep -q $'\r' "$0" 2>/dev/null; then printf '\033[1;33m!!\033[0m Fixing CRLF line endings and re-running...\n' >&2; _lf="$(mktemp)"; tr -d '\r' <"$0" >"$_lf"; bash "$_lf" "$@"; _rc=$?; rm -f "$_lf"; exit "$_rc"; fi # one line on purpose
+
 set -euo pipefail
 
 OS="$(uname -s)"
