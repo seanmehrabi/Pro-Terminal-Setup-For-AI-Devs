@@ -38,6 +38,7 @@ MODE="fresh install"
 CURRENT_STEP="startup"
 STEP_NO=0
 TOTAL_STEPS=9
+CURL_INSECURE=""
 
 usage() {
     cat <<'EOF'
@@ -51,8 +52,12 @@ Options:
                 tool versions as macOS (recommended on WSL; apt lags on eza/fzf)
   --reinstall   Back up and remove an existing Oh My Zsh install, plugins and
                 prompt preset first, then install everything clean
-  --update      Refresh an existing install in place without asking
-  -h, --help    Show this help
+  --update        Refresh an existing install in place without asking
+  --insecure-ssl  LAST RESORT for broken TLS environments: disable certificate
+                  verification for this run's downloads. Try without it first —
+                  the script auto-repairs the CA store and, on WSL, imports the
+                  Windows certificate store (fixes corporate SSL inspection).
+  -h, --help      Show this help
 
 Recovery: every step is checkpointed. If a run fails, fix the cause it printed
 and re-run the same command — completed steps are skipped automatically.
@@ -67,12 +72,14 @@ EOF
 FORCE_BREW=0
 REINSTALL=0
 UPDATE_ONLY=0
+INSECURE_SSL=0
 RERUN_FLAGS=""
 for arg in "$@"; do
     case "$arg" in
         --brew) FORCE_BREW=1; RERUN_FLAGS+=" --brew" ;;
         --reinstall) REINSTALL=1 ;;
         --update) UPDATE_ONLY=1 ;;
+        --insecure-ssl) INSECURE_SSL=1; RERUN_FLAGS+=" --insecure-ssl" ;;
         -h|--help) usage; exit 0 ;;
         *) printf 'Unknown option: %s (try --help)\n' "$arg" >&2; exit 2 ;;
     esac
@@ -129,6 +136,88 @@ init_logging() {
     exec > >(tee -a "$LOG_FILE") 2>&1
 }
 
+# ------------------------------------------------------------- ssl trust ---
+# Corporate proxies (Zscaler, Netskope, ...) and minimal WSL images break TLS
+# with: curl: (60) SSL certificate problem: unable to get local issuer cert.
+# Fix it properly instead of bypassing: repair the Linux CA store, then (WSL)
+# import the Windows certificate store — Windows already trusts the corporate
+# root CA, Linux just hasn't heard of it.
+
+ssl_probe() {
+    curl $CURL_INSECURE -fsSL --max-time 15 -o /dev/null https://github.com
+}
+
+repair_ca_store() {
+    [[ "$OS" == "Linux" ]] || return 1
+    log "Repairing the system certificate store (ca-certificates)..."
+    # apt talks plain http to Ubuntu mirrors, so it works even while TLS is broken.
+    $SUDO apt-get update -qq || warn "apt-get update reported errors; continuing."
+    $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y --reinstall ca-certificates
+    $SUDO update-ca-certificates --fresh >/dev/null
+}
+
+import_windows_cas() {
+    [[ "$IS_WSL" == 1 ]] || return 1
+    command -v powershell.exe >/dev/null 2>&1 || return 1
+    log "Importing trusted root certificates from Windows (fixes corporate SSL inspection)..."
+    local pem="$STATE_DIR/windows-root-cas.pem"
+    # PowerShell reads the Windows cert store; we convert to PEM for Linux.
+    (cd /mnt/c 2>/dev/null || cd /; powershell.exe -NoProfile -NonInteractive -Command \
+        'Get-ChildItem -Path Cert:\LocalMachine\Root, Cert:\CurrentUser\Root | Sort-Object Thumbprint -Unique | ForEach-Object { "-----BEGIN CERTIFICATE-----"; [Convert]::ToBase64String($_.RawData, "InsertLineBreaks"); "-----END CERTIFICATE-----" }') \
+        2>/dev/null | tr -d '\r' > "$pem" || return 1
+    local n=0
+    n="$(grep -c 'BEGIN CERTIFICATE' "$pem" 2>/dev/null)" || n=0
+    if [[ "$n" -eq 0 ]]; then
+        warn "Could not export certificates from Windows."
+        return 1
+    fi
+    log "Exported $n Windows root certificates; adding them to the Linux trust store..."
+    $SUDO mkdir -p /usr/local/share/ca-certificates
+    $SUDO cp "$pem" /usr/local/share/ca-certificates/windows-host-roots.crt
+    $SUDO update-ca-certificates >/dev/null
+}
+
+ensure_ssl_trust() {
+    CURRENT_STEP="ssl-trust"
+    command -v curl >/dev/null 2>&1 || return 0   # curl arrives with the packages step
+
+    if [[ "$INSECURE_SSL" == 1 ]]; then
+        warn "--insecure-ssl: TLS certificate verification is DISABLED for this run's downloads."
+        warn "Only acceptable on a network you trust. Remove the flag once IT gives you the CA."
+        CURL_INSECURE="-k"
+        export GIT_SSL_NO_VERIFY=true
+        return 0
+    fi
+
+    local rc=0
+    ssl_probe || rc=$?
+    [[ "$rc" -eq 0 ]] && return 0
+
+    case "$rc" in
+        35|51|58|60|77|83|90)  # TLS-layer failures
+            warn "TLS trust problem detected (curl exit $rc) — fixing it automatically..."
+            ;;
+        *)
+            die "Cannot reach github.com (curl exit $rc) — check your network/proxy/VPN and re-run."
+            ;;
+    esac
+
+    if repair_ca_store && ssl_probe; then
+        log "Fixed: certificate store repaired."
+        return 0
+    fi
+    if import_windows_cas && ssl_probe; then
+        log "Fixed: Windows root certificates imported — the corporate proxy is now trusted."
+        return 0
+    fi
+
+    die "TLS verification still fails after automatic repairs. Remaining causes & fixes:
+  - Your proxy's root CA isn't in Windows either. Get the CA file (.crt/.pem) from IT, then:
+        sudo cp your-ca.crt /usr/local/share/ca-certificates/ && sudo update-ca-certificates
+  - WSL clock drift (certificate 'not yet valid'): run  sudo hwclock -s  and re-run.
+  - Last resort on a trusted network:  bash setup_pro_bash.sh${RERUN_FLAGS} --insecure-ssl"
+}
+
 # -------------------------------------------------------------- preflight ---
 # Fail fast, with a precise fix, before anything is modified.
 
@@ -167,11 +256,9 @@ preflight() {
         die "Homebrew not found. Install it first: https://brew.sh"
     fi
 
-    # Network: every install path needs GitHub.
-    if command -v curl >/dev/null 2>&1; then
-        curl -fsSL --max-time 15 -o /dev/null https://github.com \
-            || die "Cannot reach github.com — check your network/proxy/VPN and re-run."
-    fi
+    # Network + TLS: every install path needs GitHub over https. This repairs
+    # broken certificate stores / corporate SSL inspection automatically.
+    ensure_ssl_trust
 }
 
 # ---------------------------------------------------- update vs reinstall ---
@@ -269,7 +356,7 @@ install_linuxbrew() {
     $SUDO apt-get update
     $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential procps curl file git
     NONINTERACTIVE=1 bash -c \
-        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        "$(curl $CURL_INSECURE -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     [[ -x "$LINUXBREW" ]] || die "Homebrew install did not produce $LINUXBREW"
     eval "$("$LINUXBREW" shellenv)"
 }
@@ -320,7 +407,7 @@ install_oh_my_zsh() {
     fi
     log "Installing Oh My Zsh..."
     RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        sh -c "$(curl $CURL_INSECURE -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
 install_powerlevel10k() {
@@ -402,7 +489,7 @@ install_fonts() {
         if [[ -f "$dest/$file" ]]; then
             continue
         fi
-        curl -fsSL -o "$dest/$file" "$base/MesloLGS%20NF%20${style}.ttf" || ok=0
+        curl $CURL_INSECURE -fsSL -o "$dest/$file" "$base/MesloLGS%20NF%20${style}.ttf" || ok=0
     done
     if [[ "$ok" == 1 ]]; then
         log "Fonts downloaded to Windows: $dest"
