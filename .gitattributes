@@ -7,6 +7,7 @@
 # CRLF makes bash fail with: line 3: set: pipefail: invalid option name
 *.sh    text eol=lf
 *.bash  text eol=lf
+*.zsh   text eol=lf
 
 # PowerShell is happiest with CRLF on Windows.
 *.ps1   text eol=crlf
