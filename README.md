@@ -90,7 +90,9 @@ bash setup_pro_bash.sh
 - Installs packages via Homebrew or apt
 - Installs Oh My Zsh, powerlevel10k, and zsh plugins (if missing)
 - Backs up `~/.zshrc` to `~/.zshrc.bak.<timestamp>`
-- Sets `ZSH_THEME` and `plugins=(…)`
+- Sets `ZSH_THEME` and `plugins=(…)`, above the `source $ZSH/oh-my-zsh.sh` line
+- Adds the Oh My Zsh bootstrap (`export ZSH=…` + `source …/oh-my-zsh.sh`) when
+  your existing `~/.zshrc` doesn't already load it
 - Appends/refreshes a managed block between:
 
   ```text
@@ -175,6 +177,21 @@ Themes and plugins:
 ---
 
 ## Troubleshooting
+
+**`zsh: command not found: p10k`** (and a plain `hostname%` prompt instead of a themed one)
+
+`p10k` is a function that powerlevel10k defines when Oh My Zsh loads it, so this
+means your `~/.zshrc` never sourced the framework. Oh My Zsh is installed with
+`KEEP_ZSHRC=yes`, so a `~/.zshrc` that already existed — Ubuntu and WSL create a
+basic one — is left untouched and never loads it. The script now adds the
+bootstrap itself; re-run it and open a new shell:
+
+```bash
+bash setup_pro_bash.sh && exec zsh
+```
+
+To check by hand, `~/.zshrc` should contain a line sourcing `oh-my-zsh.sh`, with
+`ZSH_THEME` and `plugins=(…)` set *above* it.
 
 **`line 3: set: pipefail: invalid option name`** (often shown garbled, e.g. `: invalid option namene 3: set: pipefail`)
 
