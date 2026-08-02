@@ -5,9 +5,9 @@
 # fish-style autosuggestions, fzf-powered tab completion, syntax highlighting,
 # and a curated modern CLI toolbox (eza, bat, ripgrep, fd, fzf, zoxide, delta).
 #
-# Usage:
-#   bash setup_pro_bash.sh           # macOS: Homebrew | Linux: brew if present, else apt
-#   bash setup_pro_bash.sh --brew    # Linux: install Homebrew (Linuxbrew) and use it
+# Usage: bash setup_pro_bash.sh [--brew] [--reinstall] [--update]   (see --help)
+# Never run with sudo. Steps are checkpointed — if a run fails, re-run the same
+# command and it resumes at the failed step. Log: ~/.cache/pro-terminal-setup/
 #
 # CRLF self-heal: a Windows checkout gives this file \r line endings, which makes
 # bash choke on the next line ("set: pipefail: invalid option name"). Re-run a
@@ -15,7 +15,7 @@
 # have CRLF, the stray \r lands harmlessly inside this trailing comment.
 if [ -f "$0" ] && grep -q $'\r' "$0" 2>/dev/null; then printf '\033[1;33m!!\033[0m Fixing CRLF line endings and re-running...\n' >&2; _lf="$(mktemp)"; tr -d '\r' <"$0" >"$_lf"; PTS_SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)" bash "$_lf" "$@"; _rc=$?; rm -f "$_lf"; exit "$_rc"; fi # one line on purpose
 
-set -euo pipefail
+set -Eeuo pipefail
 
 OS="$(uname -s)"
 IS_WSL=0
@@ -30,14 +30,33 @@ ZSHRC="${ZDOTDIR:-$HOME}/.zshrc"
 REPO_DIR="${PTS_SOURCE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)}"
 LINUXBREW=/home/linuxbrew/.linuxbrew/bin/brew
 
+STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/pro-terminal-setup"
+STATE_FILE="$STATE_DIR/completed-steps"
+LOG_FILE="$STATE_DIR/setup.log"
+SUDO="sudo"
+MODE="fresh install"
+CURRENT_STEP="startup"
+STEP_NO=0
+TOTAL_STEPS=9
+
 usage() {
     cat <<'EOF'
 Pro terminal bootstrap — one identical zsh experience on macOS and Ubuntu/WSL.
 
 Usage:
-  bash setup_pro_bash.sh           macOS: Homebrew | Linux: brew if present, else apt
-  bash setup_pro_bash.sh --brew    Linux: install Homebrew (Linuxbrew) and use it
-                                   (recommended on WSL — apt lags on eza/fzf/bat)
+  bash setup_pro_bash.sh [options]
+
+Options:
+  --brew        Linux: install/use Homebrew for the CLI toolbox — same current
+                tool versions as macOS (recommended on WSL; apt lags on eza/fzf)
+  --reinstall   Back up and remove an existing Oh My Zsh install, plugins and
+                prompt preset first, then install everything clean
+  --update      Refresh an existing install in place without asking
+  -h, --help    Show this help
+
+Recovery: every step is checkpointed. If a run fails, fix the cause it printed
+and re-run the same command — completed steps are skipped automatically.
+Progress + full log live in ~/.cache/pro-terminal-setup/.
 
 Ships: Oh My Zsh + powerlevel10k rainbow preset (no wizard), fzf-tab fuzzy
 completion, autosuggestions, syntax highlighting, eza/bat/ripgrep/fd/fzf/
@@ -46,17 +65,170 @@ EOF
 }
 
 FORCE_BREW=0
+REINSTALL=0
+UPDATE_ONLY=0
+RERUN_FLAGS=""
 for arg in "$@"; do
     case "$arg" in
-        --brew) FORCE_BREW=1 ;;
+        --brew) FORCE_BREW=1; RERUN_FLAGS+=" --brew" ;;
+        --reinstall) REINSTALL=1 ;;
+        --update) UPDATE_ONLY=1 ;;
         -h|--help) usage; exit 0 ;;
         *) printf 'Unknown option: %s (try --help)\n' "$arg" >&2; exit 2 ;;
     esac
 done
+if [[ "$REINSTALL" == 1 && "$UPDATE_ONLY" == 1 ]]; then
+    printf -- '--reinstall and --update are mutually exclusive.\n' >&2
+    exit 2
+fi
 
 log()  { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!!\033[0m %s\n' "$*" >&2; }
 die()  { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
+
+# ------------------------------------------------- recovery & checkpoints ---
+# Every step is recorded in $STATE_FILE when it completes. A failed run keeps
+# the file, so re-running skips finished steps and resumes at the failure.
+# A successful run deletes it.
+
+step_done() { grep -qxF "$1" "$STATE_FILE" 2>/dev/null; }
+mark_done() { printf '%s\n' "$1" >> "$STATE_FILE"; }
+
+run_step() {
+    local name="$1" fn="$2"
+    STEP_NO=$((STEP_NO + 1))
+    CURRENT_STEP="$name"
+    if step_done "$name"; then
+        log "[${STEP_NO}/${TOTAL_STEPS}] ${name}: completed in a previous run — skipping."
+        return 0
+    fi
+    log "[${STEP_NO}/${TOTAL_STEPS}] ${name}..."
+    "$fn"
+    mark_done "$name"
+}
+
+on_error() {
+    local code=$? line="$1" done_count=0
+    [[ -f "$STATE_FILE" ]] && done_count="$(grep -c . "$STATE_FILE" 2>/dev/null || echo 0)"
+    {
+        printf '\n\033[1;31m✖ Setup failed\033[0m during step: %s (line %s, exit code %s)\n' \
+            "$CURRENT_STEP" "$line" "$code"
+        [[ -f "$LOG_FILE" ]] && printf '  Full log:  %s\n' "$LOG_FILE"
+        printf '  Progress saved: %s completed step(s) will be skipped next time.\n' "$done_count"
+        printf '  Fix the problem shown above, then resume with the same command:\n'
+        printf '      bash setup_pro_bash.sh%s\n' "$RERUN_FLAGS"
+        printf '  Or start completely clean:  bash setup_pro_bash.sh --reinstall\n\n'
+    } >&2
+}
+trap 'on_error $LINENO' ERR
+
+init_logging() {
+    mkdir -p "$STATE_DIR" || die "Cannot create $STATE_DIR (check permissions on ~/.cache)"
+    printf '\n===== run: %s | mode pending =====\n' "$(date '+%Y-%m-%d %H:%M:%S')" >> "$LOG_FILE"
+    # Mirror everything the user sees into the log.
+    exec > >(tee -a "$LOG_FILE") 2>&1
+}
+
+# -------------------------------------------------------------- preflight ---
+# Fail fast, with a precise fix, before anything is modified.
+
+preflight() {
+    CURRENT_STEP="preflight"
+
+    # Root / sudo policy: never install into root's HOME by accident.
+    if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+        if [[ -n "${SUDO_USER:-}" ]]; then
+            die "Don't run this with sudo — it would configure root's shell, not yours.
+       Run it as your normal user; it will ask for sudo only where needed:
+           bash setup_pro_bash.sh${RERUN_FLAGS}"
+        fi
+        # Genuinely root (e.g. a container): no sudo needed.
+        SUDO=""
+        [[ "$FORCE_BREW" == 1 ]] && die "Homebrew refuses to run as root. Re-run as a normal user, or drop --brew."
+        warn "Running as root: installing for root's HOME."
+    elif [[ "$OS" == "Linux" ]]; then
+        command -v sudo >/dev/null 2>&1 \
+            || die "sudo is required for apt. As root run: apt-get install -y sudo && usermod -aG sudo $USER"
+        log "Checking sudo access (you may be asked for your password)..."
+        sudo -v || die "sudo authentication failed. Ask your admin for sudo rights, then re-run."
+    fi
+
+    # File permissions: catch the classic 'sudo edited my dotfiles' trap early.
+    local path
+    for path in "$ZSHRC" "$HOME/.oh-my-zsh" "$HOME/.p10k.zsh" "$HOME/.zshrc.local"; do
+        if [[ -e "$path" && ! -w "$path" ]]; then
+            die "$path is not writable by you (owned by root?). Fix it, then re-run:
+           $([[ -n "$SUDO" ]] && printf 'sudo ')chown -R \"\$USER\" \"$path\""
+        fi
+    done
+
+    # macOS needs Homebrew before anything else.
+    if [[ "$OS" == "Darwin" ]] && ! command -v brew >/dev/null 2>&1; then
+        die "Homebrew not found. Install it first: https://brew.sh"
+    fi
+
+    # Network: every install path needs GitHub.
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL --max-time 15 -o /dev/null https://github.com \
+            || die "Cannot reach github.com — check your network/proxy/VPN and re-run."
+    fi
+}
+
+# ---------------------------------------------------- update vs reinstall ---
+
+detect_existing() {
+    [[ -d "$HOME/.oh-my-zsh" ]] || [[ -f "$HOME/.p10k.zsh" ]] \
+        || grep -qF "$MARKER_BEGIN" "$ZSHRC" 2>/dev/null
+}
+
+# Full reinstall: everything is BACKED UP (never deleted), then reinstalled
+# clean. ~/.zshrc and ~/.zshrc.local stay in place; the pipeline refreshes them.
+do_reinstall() {
+    local stamp backup path
+    stamp="$(date +%Y%m%d-%H%M%S)"
+    backup="$HOME/.pro-terminal-setup-backup-${stamp}"
+    mkdir -p "$backup"
+    log "Full reinstall: moving the previous installation to $backup"
+    for path in "$HOME/.oh-my-zsh" "$HOME/.p10k.zsh"; do
+        [[ -e "$path" ]] && mv "$path" "$backup/$(basename "$path")"
+    done
+    [[ -f "$ZSHRC" ]] && cp "$ZSHRC" "$backup/zshrc"
+    rm -f "$STATE_FILE"
+    log "To roll back later: restore from $backup"
+}
+
+choose_mode() {
+    MODE="fresh install"
+    detect_existing || return 0
+    MODE="update"
+
+    if [[ "$REINSTALL" == 1 ]]; then
+        MODE="full reinstall"
+        do_reinstall
+        return 0
+    fi
+    if [[ "$UPDATE_ONLY" == 1 ]]; then
+        log "Existing installation found — updating in place."
+        return 0
+    fi
+    if [[ ! -t 0 ]]; then
+        log "Existing installation found — updating in place (pass --reinstall for a clean start)."
+        return 0
+    fi
+
+    printf '\n\033[1;33m!!\033[0m An existing installation was detected (Oh My Zsh / prompt config present).\n'
+    printf '   [U]pdate in place  - refresh tools and config, keep everything else  (default, safe)\n'
+    printf '   [R]einstall fresh  - back up the old install, then set up completely clean\n'
+    printf '   [Q]uit             - change nothing\n'
+    local ans=""
+    read -r -p "   Choose [U/r/q]: " ans || true
+    ans="$(printf '%s' "$ans" | tr '[:upper:]' '[:lower:]')"   # bash 3.2-safe lowercase
+    case "$ans" in
+        r*) MODE="full reinstall"; do_reinstall ;;
+        q*) log "Nothing changed. Bye."; exit 0 ;;
+        *)  log "Updating in place." ;;
+    esac
+}
 
 backup_file() {
     local file="$1"
@@ -94,8 +266,8 @@ use_brew() {
 
 install_linuxbrew() {
     log "Installing Homebrew for Linux (this may take a few minutes)..."
-    sudo apt-get update
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential procps curl file git
+    $SUDO apt-get update
+    $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential procps curl file git
     NONINTERACTIVE=1 bash -c \
         "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     [[ -x "$LINUXBREW" ]] || die "Homebrew install did not produce $LINUXBREW"
@@ -111,8 +283,8 @@ install_packages() {
         # /etc/shells keep working; brew only manages the toolbox.
         if [[ "$OS" == "Linux" ]]; then
             log "Installing base packages via apt..."
-            sudo apt-get update
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y zsh git curl
+            $SUDO apt-get update
+            $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y zsh git curl
         else
             log "Updating Homebrew..."
             brew update
@@ -121,7 +293,7 @@ install_packages() {
         brew install "${tools[@]}"
     elif [[ -f /etc/debian_version ]]; then
         log "Installing via apt (tip: --brew gets newer tools via Homebrew)..."
-        sudo apt-get update
+        $SUDO apt-get update
 
         local apt_pkgs=(zsh git curl) pkg apt_name
         for pkg in "${tools[@]}"; do
@@ -133,7 +305,7 @@ install_packages() {
                 warn "Not in apt on this release: $apt_name (use --brew to get it)"
             fi
         done
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${apt_pkgs[@]}"
+        $SUDO DEBIAN_FRONTEND=noninteractive apt-get install -y "${apt_pkgs[@]}"
     else
         die "Unsupported OS. This script supports macOS and Debian/Ubuntu (incl. WSL)."
     fi
@@ -514,7 +686,7 @@ configure_git() {
 
 set_default_shell() {
     local zsh_path
-    zsh_path="$(command -v zsh)" || return
+    zsh_path="$(command -v zsh)" || { warn "zsh not on PATH; skipping chsh."; return 0; }
     if [[ "${SHELL:-}" == "$zsh_path" ]]; then
         log "Default shell already zsh."
         return
@@ -555,21 +727,34 @@ The prompt ships preconfigured (rainbow powerlevel10k). To restyle: p10k configu
 Machine-only tweaks go in ~/.zshrc.local — the managed block never touches it.
 
 EOF
+    printf 'Run log: %s\n\n' "$LOG_FILE"
 }
 
 main() {
     local flavor="$OS"
     [[ "$IS_WSL" == 1 ]] && flavor="WSL/Ubuntu"
-    log "Starting pro terminal setup (${flavor})..."
-    install_packages
-    install_oh_my_zsh
-    install_powerlevel10k
-    install_plugins
-    install_p10k_config
-    install_fonts
-    update_zshrc
-    configure_git
-    set_default_shell
+
+    init_logging
+    preflight
+    choose_mode
+    log "Starting pro terminal setup (${flavor}) — mode: ${MODE}."
+    if [[ -s "$STATE_FILE" ]]; then
+        log "Resuming a previous run: $(grep -c . "$STATE_FILE") completed step(s) will be skipped."
+        log "(Start over instead with: rm $STATE_FILE  — or use --reinstall.)"
+    fi
+
+    run_step "packages"       install_packages
+    run_step "oh-my-zsh"      install_oh_my_zsh
+    run_step "powerlevel10k"  install_powerlevel10k
+    run_step "plugins"        install_plugins
+    run_step "prompt-preset"  install_p10k_config
+    run_step "fonts"          install_fonts
+    run_step "zshrc"          update_zshrc
+    run_step "git-config"     configure_git
+    run_step "default-shell"  set_default_shell
+
+    CURRENT_STEP="finish"
+    rm -f "$STATE_FILE"
     print_final
 }
 

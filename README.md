@@ -6,6 +6,29 @@ picker for completions ([fzf-tab](https://github.com/Aloxaf/fzf-tab)), your hist
 ghost-types ahead of you (autosuggestions), commands colorize as you type (syntax
 highlighting), and a curated modern CLI toolbox replaces the 1970s defaults.
 
+## Quick start
+
+**macOS**
+
+```bash
+git clone https://github.com/seanmehrabi/Pro-Terminal-Setup-For-AI-Devs.git && cd Pro-Terminal-Setup-For-AI-Devs && bash setup_pro_bash.sh && exec zsh
+```
+
+**Ubuntu / WSL** (`--brew` gets the same current tool versions as macOS)
+
+```bash
+git clone https://github.com/seanmehrabi/Pro-Terminal-Setup-For-AI-Devs.git && cd Pro-Terminal-Setup-For-AI-Devs && bash setup_pro_bash.sh --brew && exec zsh
+```
+
+That's it — the rainbow prompt appears immediately (set the font to **MesloLGS NF** for the icons; on WSL the script already downloaded the fonts to your Windows `Downloads\MesloLGS-NF`).
+
+The script takes care of itself:
+
+- **Existing setup detected?** It asks: **[U]pdate in place** (default, safe), **[R]einstall fresh** (old install backed up first, never deleted), or **[Q]uit**. Non-interactive runs default to update; force with `--update` / `--reinstall`.
+- **Something failed?** Every step is checkpointed. The error tells you the step, the cause, and the log file — fix it and re-run the same command; finished steps are skipped and it resumes exactly where it broke.
+- **Permissions handled up front:** it refuses to run under `sudo` (that would configure root's shell), verifies sudo/network/dotfile ownership *before* changing anything, and prints the exact fix when a check fails.
+- **Everything is backed up:** `~/.zshrc` before every change, the whole old install on reinstall. Log + progress live in `~/.cache/pro-terminal-setup/`.
+
 | Platform | Script | Shell / prompt |
 |----------|--------|----------------|
 | macOS, Debian/Ubuntu (incl. WSL) | [`setup_pro_bash.sh`](setup_pro_bash.sh) | zsh + [Oh My Zsh](https://ohmyz.sh/) + [powerlevel10k](https://github.com/romkatv/powerlevel10k) rainbow preset |
@@ -78,15 +101,13 @@ warning and `batcat` / `fdfind` naming is handled automatically at shell startup
 | OS | Prerequisites |
 |----|----------------|
 | **macOS** | [Homebrew](https://brew.sh) |
-| **Debian / Ubuntu / WSL** | `sudo` for `apt-get`; internet access |
+| **Debian / Ubuntu / WSL** | a user with `sudo` rights and internet access — the script verifies both up front and prints the fix if either is missing |
 | **Windows** | [winget](https://learn.microsoft.com/windows/package-manager/winget/) (App Installer from the Microsoft Store). Admin is **not** required for CurrentUser installs. |
 
-Clone the repo (preferred over piping scripts from the network), then run the script for your platform.
-
-```bash
-git clone https://github.com/<you>/Pro-Terminal-Setup-For-AI-Devs.git
-cd Pro-Terminal-Setup-For-AI-Devs
-```
+Run the script as **your normal user, not with `sudo`** — it refuses `sudo` (that would set up
+root's shell) and asks for your password itself only where apt needs it. Clone the repo
+(preferred over piping scripts from the network), then use the [Quick start](#quick-start)
+command for your platform.
 
 ---
 
@@ -96,15 +117,34 @@ cd Pro-Terminal-Setup-For-AI-Devs
 bash setup_pro_bash.sh
 ```
 
-**Recommended on WSL** — get the same up-to-date tools as macOS via Homebrew for Linux:
+### Options
 
-```bash
-bash setup_pro_bash.sh --brew
-```
+| Flag | What it does |
+|------|--------------|
+| `--brew` | Linux: install/use Homebrew for the toolbox — same current tool versions as macOS. **Recommended on WSL**; plain apt skips whatever your Ubuntu release lacks (often `eza`, a modern `fzf`) with a warning. Auto-used if brew is already installed. |
+| `--reinstall` | Back up the existing Oh My Zsh install, plugins and prompt preset to `~/.pro-terminal-setup-backup-<timestamp>/`, then install everything clean. Nothing is ever deleted. |
+| `--update` | Refresh an existing install in place without asking (what re-runs do by default when non-interactive). |
+| `-h`, `--help` | Usage, including recovery notes. |
 
-(Without `--brew`, apt is used and whatever your Ubuntu release lacks — often `eza`,
-a modern `fzf` — is skipped with a warning. If brew is already installed, it's used
-automatically.)
+### If something goes wrong
+
+The script is built to recover, not to be babysat:
+
+1. **Preflight checks first** — sudo access, network to GitHub, and dotfile ownership are
+   verified *before* anything is modified. Each failure prints the exact command that fixes it
+   (e.g. the `chown` for a root-owned `~/.zshrc`, the `apt-get install sudo` for a bare container).
+2. **Checkpointed steps** — the 9 install steps (`packages`, `oh-my-zsh`, `powerlevel10k`,
+   `plugins`, `prompt-preset`, `fonts`, `zshrc`, `git-config`, `default-shell`) are recorded in
+   `~/.cache/pro-terminal-setup/completed-steps` as they finish. A successful run clears the file.
+3. **On failure** you get the step name, line, exit code, and the log path
+   (`~/.cache/pro-terminal-setup/setup.log` — every run appends to it). Fix the cause, re-run the
+   same command, and it **resumes at the failed step**; everything already done is skipped.
+4. **Escape hatches** — `rm ~/.cache/pro-terminal-setup/completed-steps` re-runs all steps
+   (harmless: each one is idempotent); `--reinstall` starts from a clean slate with the old
+   install preserved in a backup folder.
+
+Running it with `sudo` is refused by design — that would configure root's shell instead of yours.
+The script asks for your sudo password itself, only for `apt`.
 
 ### After setup
 
@@ -262,12 +302,15 @@ the font in Windows Terminal → Settings → your Ubuntu profile → Appearance
 
 | Behavior | Detail |
 |----------|--------|
-| Backups | Every profile write creates `*.bak.<yyyyMMdd-HHmmss>` |
+| Backups | Every profile write creates `*.bak.<yyyyMMdd-HHmmss>`; a full reinstall moves the old install to `~/.pro-terminal-setup-backup-<timestamp>/` instead of deleting it |
+| Resume | Failed runs keep their checkpoints; re-running skips completed steps and continues from the failure |
+| Existing installs | Detected on start — you choose update-in-place (default) or a clean reinstall |
 | Idempotent tools | Existing packages, OMZ, plugins, fonts, modules are skipped when detected |
-| Managed block | Content between the `pro-terminal-setup` markers is replaced on each run |
-| Outside the block | Your other `.zshrc` / `$PROFILE` content is left alone (theme/plugins lines on zsh are updated in place) |
+| Managed blocks | Only content between the `pro-terminal-setup` markers is replaced on each run |
+| Outside the blocks | Your other `.zshrc` / `$PROFILE` content is left alone (theme/plugins lines on zsh are updated in place) |
+| Logs | Every run appends to `~/.cache/pro-terminal-setup/setup.log` |
 
-To undo the managed config: restore a backup, or delete the marker block from your profile. Installed packages and Oh My Zsh are not removed automatically.
+To undo the managed config: restore a backup, or delete the marker blocks from your profile. Installed packages and Oh My Zsh are not removed automatically.
 
 ---
 
