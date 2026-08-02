@@ -1,32 +1,192 @@
-# Professional Terminal Setup
+# Pro Terminal Setup for AI Devs
 
-A cross-platform guide to quickly bootstrap a productive shell environment for Windows, macOS and Linux. These scripts install Oh My Posh or Oh My Zsh with helpful plugins and the Meslo Nerd Font so your terminal looks and works great. :rocket:
+Cross-platform bootstrap scripts that install a modern shell stack and wire up **idempotent** config for everyday coding and AI-assisted workflows (search, navigation, git, and a clean prompt).
 
-## Windows PowerShell 7+
+| Platform | Script | Shell / prompt |
+|----------|--------|----------------|
+| macOS, Debian/Ubuntu (incl. WSL) | [`setup_pro_bash.sh`](setup_pro_bash.sh) | zsh + [Oh My Zsh](https://ohmyz.sh/) + [powerlevel10k](https://github.com/romkatv/powerlevel10k) |
+| Windows | [`setup_pro_powershell.ps1`](setup_pro_powershell.ps1) | PowerShell 7 + [Oh My Posh](https://ohmyposh.dev/) (`paradox` theme) |
 
-Run the PowerShell setup script as administrator:
+Both scripts are **safe to re-run**: they back up your profile, replace only a managed block between markers, and skip software that is already installed.
 
-```powershell
-./setup_pro_powershell.ps1
+---
+
+## What you get
+
+### CLI tools
+
+| Tool | Purpose |
+|------|---------|
+| [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) | Fast search |
+| [fd](https://github.com/sharkdp/fd) | Fast file find |
+| [fzf](https://github.com/junegunn/fzf) | Fuzzy finder (history / files) |
+| [zoxide](https://github.com/ajeetdsouza/zoxide) (`z`) | Smart directory jumping |
+| [eza](https://github.com/eza-community/eza) | Modern `ls` |
+| [bat](https://github.com/sharkdp/bat) | Syntax-highlighted `cat` |
+| [delta](https://github.com/dandavison/delta) | Better git diffs |
+| [jq](https://jqlang.github.io/jq/) | JSON processing |
+| [GitHub CLI](https://cli.github.com/) (`gh`) | PRs, issues, auth from the terminal |
+| git, curl, wget, tmux, vim, htop | Baseline utilities (bash script) |
+
+On Debian/Ubuntu, missing packages are skipped with a warning (older releases may not ship `eza`, `zoxide`, etc.). Binary names like `batcat` / `fdfind` are aliased where needed.
+
+### Shell experience
+
+**macOS / Linux**
+
+- Oh My Zsh + powerlevel10k
+- Plugins: `git`, `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions`
+- Large shared history, fzf keybindings, zoxide, git aliases (`gs`, `ga`, `gc`, …)
+- Optional git **delta** pager (only if `core.pager` is not already set)
+- Default shell switched to zsh when possible
+
+**Windows**
+
+- Oh My Posh + PSReadLine (predictions) + Terminal-Icons
+- Git helpers as **functions** so built-in aliases (`gc`, `gp`, `gl`) are not clobbered
+- eza / bat / zoxide / `rg` wired when present
+
+### Font
+
+**MesloLGS Nerd Font** (glyphs for powerline / icons):
+
+- **macOS:** Homebrew cask `font-meslo-lg-nerd-font`
+- **Windows:** Oh My Posh font install, or direct download of Nerd Fonts Meslo
+- **Linux / WSL:** install a Nerd Font on the host and set it in the terminal (e.g. Windows Terminal for WSL)
+
+---
+
+## Requirements
+
+| OS | Prerequisites |
+|----|----------------|
+| **macOS** | [Homebrew](https://brew.sh) |
+| **Debian / Ubuntu / WSL** | `sudo` for `apt-get`; internet access |
+| **Windows** | [winget](https://learn.microsoft.com/windows/package-manager/winget/) (App Installer from the Microsoft Store). Admin is **not** required for CurrentUser installs. |
+
+Clone the repo (preferred over piping scripts from the network), then run the script for your platform.
+
+```bash
+git clone https://github.com/<you>/Pro-Terminal-Setup-For-AI-Devs.git
+cd Pro-Terminal-Setup-For-AI-Devs
 ```
 
-The script installs **PowerShell 7**, [Oh My Posh](https://ohmyposh.dev/), `PSReadLine`, and `Terminal-Icons`. It also downloads the **MesloLGS NF** font and updates your `$PROFILE` to load the `paradox` theme with handy aliases.
-After running, restart PowerShell and change the terminal font to *MesloLGS NF*.
+---
 
-## Ubuntu (WSL) or macOS
-
-Execute the bash script:
+## macOS & Ubuntu (WSL)
 
 ```bash
 bash setup_pro_bash.sh
 ```
 
-It installs required packages such as `zsh`, `tmux`, `fzf`, and more using **apt** on Ubuntu or **Homebrew** on macOS. The script sets up [Oh My Zsh](https://ohmyz.sh/), the `powerlevel10k` theme, and plugins for autosuggestions and syntax highlighting. Aliases like `ll` and `gs` are added to your `.zshrc` and `zsh` becomes the default shell.
+### After setup
 
-On macOS you'll be prompted to install the MesloLGS NF font via Homebrew. Linux users should download a Nerd Font and configure their terminal to use it.
+1. Restart the terminal, or run `exec zsh`
+2. Set the terminal font to **MesloLGS Nerd Font** / **MesloLGS NF**
+3. Run `p10k configure` for the first-time powerlevel10k wizard
 
-## Customizing
+### What the script changes
 
-Both Oh My Posh and Oh My Zsh offer many themes. Edit your `$PROFILE` or `.zshrc` to switch themes or add plugins. For more configuration examples, see the [official documentation](https://ohmyposh.dev/docs) and [Oh My Zsh wiki](https://github.com/ohmyzsh/ohmyzsh/wiki).
+- Installs packages via Homebrew or apt
+- Installs Oh My Zsh, powerlevel10k, and zsh plugins (if missing)
+- Backs up `~/.zshrc` to `~/.zshrc.bak.<timestamp>`
+- Sets `ZSH_THEME` and `plugins=(…)`
+- Appends/refreshes a managed block between:
 
-Enjoy your new terminal! :tada:
+  ```text
+  # >>> pro-terminal-setup >>>
+  ...
+  # <<< pro-terminal-setup <<<
+  ```
+
+- May run `chsh` to make zsh the default shell
+- Configures git delta globals only when no `core.pager` is set
+
+---
+
+## Windows (PowerShell 7+)
+
+From PowerShell (Windows Terminal recommended):
+
+```powershell
+# If needed: allow this session to run local scripts
+Set-ExecutionPolicy -Scope Process Bypass
+
+.\setup_pro_powershell.ps1
+```
+
+Optional switches:
+
+```powershell
+.\setup_pro_powershell.ps1 -SkipTools   # Oh My Posh + profile only
+.\setup_pro_powershell.ps1 -SkipFont    # skip Nerd Font install
+```
+
+If you are still on Windows PowerShell 5.x, the script installs **PowerShell 7** via winget and exits—re-run from `pwsh.exe` to finish.
+
+### After setup
+
+1. Restart Windows Terminal / PowerShell
+2. Set the font to **MesloLGS Nerd Font** (or MesloLGS NF)
+3. Optional: `oh-my-posh config export --output ~\.mytheme.omp.json` and point the profile at your theme
+
+### What the script changes
+
+- Installs Oh My Posh, PSReadLine, Terminal-Icons
+- Installs dev tools via winget (unless `-SkipTools`)
+- Installs Meslo Nerd Font for the current user (unless `-SkipFont`)
+- Backs up `$PROFILE` to `$PROFILE.bak.<timestamp>`
+- Writes/refreshes the same style of managed marker block in your PowerShell 7 profile
+
+---
+
+## Customizing (safe zone)
+
+**Do not put secrets or machine-only settings inside the managed marker block**—re-running the installer will replace that section.
+
+| Platform | Local override file (not overwritten) |
+|----------|----------------------------------------|
+| macOS / Linux | `~/.zshrc.local` (sourced at end of the managed block) |
+| Windows | `%USERPROFILE%\Documents\PowerShell\Microsoft.PowerShell_profile.local.ps1` |
+
+Examples for `~/.zshrc.local`:
+
+```bash
+export EDITOR=nvim
+# export ANTHROPIC_API_KEY=...   # keep API keys out of git and out of managed blocks
+alias projects='cd ~/projects'
+```
+
+Themes and plugins:
+
+- **zsh / p10k:** edit `ZSH_THEME`, `plugins=(…)`, or run `p10k configure`; see the [Oh My Zsh wiki](https://github.com/ohmyzsh/ohmyzsh/wiki)
+- **Oh My Posh:** change the `oh-my-posh init` line in the managed block (or move theme choice into your local profile after init); see [Oh My Posh docs](https://ohmyposh.dev/docs)
+
+---
+
+## Tips for AI / dev workflows
+
+- Prefer **`rg` / `fd` / `fzf`** over slow `grep` / `find` / scrolling history
+- Use **`z <partial-dir>`** (zoxide) to jump between projects
+- Use **`gh`** for clone, PR, and auth flows agents and humans share
+- Install agent CLIs yourself when you need them (Claude Code, Codex, Cursor, etc.)—this repo focuses on the shell substrate they run in
+- Keep tokens and host-specific paths in the **local** override files above
+
+---
+
+## Safety & re-runs
+
+| Behavior | Detail |
+|----------|--------|
+| Backups | Every profile write creates `*.bak.<yyyyMMdd-HHmmss>` |
+| Idempotent tools | Existing packages, OMZ, plugins, fonts, modules are skipped when detected |
+| Managed block | Content between the `pro-terminal-setup` markers is replaced on each run |
+| Outside the block | Your other `.zshrc` / `$PROFILE` content is left alone (theme/plugins lines on zsh are updated in place) |
+
+To undo the managed config: restore a backup, or delete the marker block from your profile. Installed packages and Oh My Zsh are not removed automatically.
+
+---
+
+## License
+
+[MIT](LICENSE) © Sean Mehrabi
