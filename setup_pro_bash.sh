@@ -813,6 +813,9 @@ Daily drivers:
 The prompt ships preconfigured (rainbow powerlevel10k). To restyle: p10k configure
 Machine-only tweaks go in ~/.zshrc.local — the managed block never touches it.
 
+Optional AI apps (Cursor, agents, local models) are not installed here — run separately:
+  bash setup_ai.sh
+
 EOF
     printf 'Run log: %s\n\n' "$LOG_FILE"
 }

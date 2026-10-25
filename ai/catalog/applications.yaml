@@ -1,0 +1,444 @@
+applications:
+  - id: chatgpt
+    name: ChatGPT
+    cost: free
+    auth: vendor-account
+    summary: OpenAI web and desktop chat
+    official_url: https://chat.openai.com
+    profiles:
+      - chat
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: claude
+    name: Claude
+    cost: freemium
+    auth: vendor-account
+    summary: Anthropic Claude assistant
+    official_url: https://claude.ai
+    profiles:
+      - chat
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: gemini
+    name: Google Gemini
+    cost: free
+    auth: vendor-account
+    summary: Google Gemini assistant
+    official_url: https://gemini.google.com
+    profiles:
+      - chat
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: copilot
+    name: GitHub Copilot
+    cost: paid
+    auth: vendor-account
+    summary: AI pair programming in the editor
+    official_url: https://github.com/features/copilot
+    profiles:
+      - coding
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: cursor
+    name: Cursor
+    cost: freemium
+    auth: vendor-account
+    summary: AI-native code editor
+    official_url: https://cursor.com
+    profiles:
+      - coding
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: lm-studio
+    name: LM Studio
+    cost: free
+    auth: optional
+    summary: Local LLM desktop runtime
+    official_url: https://lmstudio.ai
+    profiles:
+      - chat
+      - local
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: perplexity
+    name: Perplexity
+    cost: freemium
+    auth: vendor-account
+    summary: Answer engine with citations
+    official_url: https://www.perplexity.ai
+    profiles:
+      - chat
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: opencode
+    name: OpenCode
+    cost: free
+    auth: optional
+    summary: Open agentic coding CLI
+    official_url: https://opencode.ai
+    profiles:
+      - coding
+      - agents
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: cline
+    name: Cline
+    cost: free
+    auth: api-key
+    summary: VS Code agent extension
+    official_url: https://cline.bot
+    profiles:
+      - coding
+      - agents
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: ollama
+    name: Ollama
+    cost: free
+    auth: none
+    summary: Run open models locally
+    official_url: https://ollama.com
+    profiles:
+      - local
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: vscode
+    name: Visual Studio Code
+    cost: free
+    auth: optional
+    summary: Microsoft code editor
+    official_url: https://code.visualstudio.com
+    profiles:
+      - coding
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: continue
+    name: Continue
+    cost: free
+    auth: api-key
+    summary: Open-source AI code assistant
+    official_url: https://continue.dev
+    profiles:
+      - local
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: aider
+    name: Aider
+    cost: free
+    auth: api-key
+    summary: Terminal pair programming with LLMs
+    official_url: https://aider.chat
+    profiles:
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: open-webui
+    name: Open WebUI
+    cost: free
+    auth: optional
+    summary: Self-hosted chat UI for local models
+    official_url: https://openwebui.com
+    profiles:
+      - local
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: gh
+    name: GitHub CLI
+    cost: free
+    auth: vendor-account
+    summary: GitHub from the terminal
+    official_url: https://cli.github.com
+    profiles:
+      - agents
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: git
+    name: Git
+    cost: free
+    auth: none
+    summary: Version control
+    official_url: https://git-scm.com
+    profiles:
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: python
+    name: Python
+    cost: free
+    auth: none
+    summary: Python runtime for tooling
+    official_url: https://www.python.org
+    profiles:
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: node
+    name: Node.js
+    cost: free
+    auth: none
+    summary: JavaScript runtime for CLI tools
+    official_url: https://nodejs.org
+    profiles:
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: codex
+    name: OpenAI Codex CLI
+    cost: paid
+    auth: api-key
+    summary: OpenAI coding agent CLI
+    official_url: https://developers.openai.com/codex
+    profiles:
+      - coding
+      - agents
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: claude-code
+    name: Claude Code
+    cost: freemium
+    auth: vendor-account
+    summary: Anthropic terminal coding agent
+    official_url: https://docs.anthropic.com/en/docs/claude-code
+    profiles:
+      - coding
+      - agents
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
+  - id: gemini-cli
+    name: Gemini CLI
+    cost: free
+    auth: vendor-account
+    summary: Google Gemini in the terminal
+    official_url: https://github.com/google-gemini/gemini-cli
+    profiles:
+      - coding
+      - agents
+    platforms:
+      macos:
+        method: pending
+        package: ""
+        verified: false
+      windows:
+        method: pending
+        package: ""
+        verified: false
+      linux:
+        method: pending
+        package: ""
+        verified: false
