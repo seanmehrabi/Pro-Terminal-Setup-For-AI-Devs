@@ -1,0 +1,106 @@
+chatgpt:
+  method: web-fallback
+  limitation: No universal distro package; use vendor Linux desktop build or web app.
+  official_url: https://chat.openai.com
+  verified: false
+claude:
+  method: manual
+  limitation: Download the vendor Linux desktop package from the official site.
+  official_url: https://claude.ai/download
+  verified: false
+gemini:
+  method: web-fallback
+  limitation: Use the web app or vendor-provided Linux client when available.
+  official_url: https://gemini.google.com
+  verified: false
+copilot:
+  method: manual
+  limitation: Install via VS Code or JetBrains extension marketplace; no standalone distro package.
+  official_url: https://github.com/features/copilot
+  verified: false
+cursor:
+  method: manual
+  limitation: Download the vendor Linux AppImage or package from the official site.
+  official_url: https://cursor.com
+  verified: false
+lm-studio:
+  method: manual
+  limitation: Download the vendor Linux build from the official site.
+  official_url: https://lmstudio.ai
+  verified: false
+perplexity:
+  method: web-fallback
+  limitation: Use the web app; no standard distro package.
+  official_url: https://www.perplexity.ai
+  verified: false
+opencode:
+  method: manual
+  limitation: Install via vendor instructions (often npm or binary download).
+  official_url: https://opencode.ai
+  verified: false
+cline:
+  method: manual
+  limitation: Install the VS Code extension manually; no distro package.
+  official_url: https://cline.bot
+  verified: false
+ollama:
+  method: script
+  package: https://ollama.com/install.sh
+  limitation: Installs via vendor script; requires PRO_TERMINAL_ALLOW_SCRIPTS=1 for automated run.
+  official_url: https://ollama.com
+  verified: false
+vscode:
+  method: manual
+  limitation: Use Microsoft apt/yum repository instructions or download from the official site.
+  official_url: https://code.visualstudio.com
+  verified: false
+continue:
+  method: manual
+  limitation: Install the Continue VS Code extension; no standalone distro package.
+  official_url: https://continue.dev
+  verified: false
+aider:
+  method: manual
+  limitation: Typically installed with pip or pipx; no standard distro package.
+  official_url: https://aider.chat
+  verified: false
+open-webui:
+  method: manual
+  limitation: Deploy with Docker or pip per vendor docs; no standard distro package.
+  official_url: https://openwebui.com
+  verified: false
+gh:
+  method: manual
+  limitation: Package name differs by distro; installer will try apt then dnf only for ids listed.
+  official_url: https://cli.github.com
+  verified: false
+git:
+  method: manual
+  limitation: Package name differs by distro; installer will try apt then dnf only for ids listed.
+  official_url: https://git-scm.com
+  verified: false
+python:
+  method: manual
+  limitation: Package name differs by distro; installer will try apt then dnf only for ids listed.
+  official_url: https://www.python.org
+  verified: false
+node:
+  method: manual
+  limitation: Package name differs by distro; installer will try apt then dnf only for ids listed.
+  official_url: https://nodejs.org
+  verified: false
+codex:
+  method: manual
+  limitation: Install via npm per OpenAI Codex CLI documentation.
+  official_url: https://developers.openai.com/codex
+  verified: false
+claude-code:
+  method: manual
+  limitation: Install via Anthropic documented npm or native installer.
+  official_url: https://docs.anthropic.com/en/docs/claude-code
+  verified: false
+gemini-cli:
+  method: manual
+  limitation: Install via npm per Google Gemini CLI repository instructions.
+  official_url: https://github.com/google-gemini/gemini-cli
+  verified: false

@@ -1,0 +1,28 @@
+profiles:
+  coding:
+    - cursor
+    - vscode
+    - copilot
+    - codex
+    - claude-code
+    - gemini-cli
+    - opencode
+    - cline
+  chat:
+    - chatgpt
+    - claude
+    - gemini
+    - perplexity
+    - lm-studio
+  agents:
+    - codex
+    - claude-code
+    - gemini-cli
+    - opencode
+    - cline
+    - gh
+  local:
+    - ollama
+    - lm-studio
+    - open-webui
+    - continue

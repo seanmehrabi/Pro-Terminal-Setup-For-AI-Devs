@@ -1,0 +1,100 @@
+# AI Workstation — unit tests and script lint; does not install vendor AI apps.
+# Note: `python3 -m ai dry-run` only validates planning; it is not a real install test.
+name: AI Workstation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feature/universal-ai-workstation
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -m unittest discover -s tests/shared -p "test_*.py" -v
+          python -m unittest discover -s tests/linux -p "test_*.py" -v
+          python -m unittest discover -s tests/macos -p "test_*.py" -v
+          python -m unittest discover -s tests/windows -p "test_*.py" -v
+
+      - name: Bash syntax check (setup scripts)
+        if: runner.os != 'Windows'
+        run: |
+          bash -n setup_ai.sh
+          bash -n setup_pro_bash.sh
+
+      - name: Install ShellCheck (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: ShellCheck setup_ai.sh (Ubuntu)
+        if: runner.os == 'Linux'
+        run: shellcheck setup_ai.sh
+
+      - name: PowerShell parse check (setup_ai.ps1)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $paths = @('setup_ai.ps1')
+          foreach ($path in $paths) {
+            if (-not (Test-Path $path)) { continue }
+            $tokens = $null
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            )
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_ }
+              exit 1
+            }
+          }
+
+  dashboard:
+    name: dashboard build
+    runs-on: ubuntu-latest
+    # No package-lock.json yet — npm install may drift; keep visible but non-blocking.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        if: hashFiles('dashboard/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dashboard dependencies
+        if: hashFiles('dashboard/package.json') != ''
+        working-directory: dashboard
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build dashboard
+        if: hashFiles('dashboard/package.json') != ''
+        working-directory: dashboard
+        run: npm run build

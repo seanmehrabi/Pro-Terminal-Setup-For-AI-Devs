@@ -331,6 +331,20 @@ To undo the managed config: restore a backup, or delete the marker blocks from y
 
 ---
 
+## Optional AI workstation installer
+
+Terminal setup and AI app installation are separate. After the shell is configured, from the repo root:
+
+```bash
+bash setup_ai.sh --help
+python3 -m ai list
+python3 -m ai dry-run --profile coding
+```
+
+See [docs/architecture.md](docs/architecture.md) for catalog, profiles, and adapter design.
+
+---
+
 ## License
 
 [MIT](LICENSE) © Sean Mehrabi

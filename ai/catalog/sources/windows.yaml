@@ -1,0 +1,231 @@
+chatgpt:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Not verified on a Windows host. Use the official ChatGPT desktop installer."
+  fallback_method: web-fallback
+  fallback_note: "Download ChatGPT for Windows from OpenAI."
+  official_url: https://openai.com/chatgpt/download
+claude:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Not verified on a Windows host. Use Anthropic's official Claude desktop download."
+  fallback_method: web-fallback
+  fallback_note: "Install Claude for Windows from Anthropic."
+  official_url: https://claude.ai/download
+gemini:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Not verified on a Windows host. Use Google's official Gemini app or web client."
+  fallback_method: web-fallback
+  fallback_note: "Install Gemini from Google."
+  official_url: https://gemini.google.com
+copilot:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Copilot is enabled inside supported editors; no standalone WinGet id confirmed here."
+  fallback_method: web-fallback
+  fallback_note: "Enable GitHub Copilot in VS Code or your editor per GitHub docs."
+  official_url: https://github.com/features/copilot
+cursor:
+  method: winget
+  package: Anysphere.Cursor
+  detect_app: "%LOCALAPPDATA%\\Programs\\cursor\\Cursor.exe"
+  detect_cmd: cursor
+  version_cmd: ""
+  verified: false
+  limitation: "WinGet id Anysphere.Cursor not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Use the official Windows installer from the vendor site."
+  official_url: https://cursor.com
+lm-studio:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Not verified on a Windows host. LM Studio provides a direct Windows installer."
+  fallback_method: web-fallback
+  fallback_note: "Download LM Studio for Windows."
+  official_url: https://lmstudio.ai
+perplexity:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Not verified on a Windows host. Use Perplexity's official Windows app or web client."
+  fallback_method: web-fallback
+  fallback_note: "Install Perplexity from the vendor site."
+  official_url: https://www.perplexity.ai
+opencode:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: opencode
+  version_cmd: opencode --version
+  verified: false
+  limitation: "Not verified on a Windows host. Install via vendor instructions (often npm or binary)."
+  fallback_method: web-fallback
+  fallback_note: "Follow OpenCode install docs for Windows."
+  official_url: https://opencode.ai
+cline:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Cline is a VS Code extension; install from the marketplace or vendor docs."
+  fallback_method: web-fallback
+  fallback_note: "Install the Cline extension in VS Code."
+  official_url: https://cline.bot
+ollama:
+  method: winget
+  package: Ollama.Ollama
+  detect_app: ""
+  detect_cmd: ollama
+  version_cmd: ollama --version
+  verified: false
+  limitation: "WinGet id Ollama.Ollama not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Use the official Windows installer from ollama.com."
+  official_url: https://ollama.com
+vscode:
+  method: winget
+  package: Microsoft.VisualStudioCode
+  detect_app: "%ProgramFiles%\\Microsoft VS Code\\Code.exe"
+  detect_cmd: code
+  version_cmd: code --version
+  verified: false
+  limitation: "WinGet id Microsoft.VisualStudioCode not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Download Visual Studio Code for Windows."
+  official_url: https://code.visualstudio.com
+continue:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Continue is a VS Code extension; no standalone WinGet package confirmed here."
+  fallback_method: web-fallback
+  fallback_note: "Install Continue from the VS Code marketplace."
+  official_url: https://continue.dev
+aider:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: aider
+  version_cmd: aider --version
+  verified: false
+  limitation: "Aider is installed via pip; not verified on a Windows host from this environment."
+  fallback_method: web-fallback
+  fallback_note: "Install with pip after Python is available: pip install aider-chat"
+  official_url: https://aider.chat
+open-webui:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "Open WebUI is typically run via Docker or Python; not verified on Windows here."
+  fallback_method: web-fallback
+  fallback_note: "Follow Open WebUI docs for Windows or Docker."
+  official_url: https://openwebui.com
+gh:
+  method: winget
+  package: GitHub.cli
+  detect_app: ""
+  detect_cmd: gh
+  version_cmd: gh --version
+  verified: false
+  limitation: "WinGet id GitHub.cli not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Install GitHub CLI from cli.github.com."
+  official_url: https://cli.github.com
+git:
+  method: winget
+  package: Git.Git
+  detect_app: ""
+  detect_cmd: git
+  version_cmd: git --version
+  verified: false
+  limitation: "WinGet id Git.Git not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Install Git for Windows from git-scm.com."
+  official_url: https://git-scm.com
+python:
+  method: winget
+  package: Python.Python.3.12
+  detect_app: ""
+  detect_cmd: python
+  version_cmd: python --version
+  verified: false
+  limitation: "WinGet id Python.Python.3.12 not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Install Python from python.org or WinGet."
+  official_url: https://www.python.org
+node:
+  method: winget
+  package: OpenJS.NodeJS.LTS
+  detect_app: ""
+  detect_cmd: node
+  version_cmd: node --version
+  verified: false
+  limitation: "WinGet id OpenJS.NodeJS.LTS not confirmed from this macOS environment. Confirmation requires a Windows host."
+  fallback_method: web-fallback
+  fallback_note: "Install Node.js LTS from nodejs.org."
+  official_url: https://nodejs.org
+codex:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: codex
+  version_cmd: codex --version
+  verified: false
+  limitation: "OpenAI Codex CLI install path not verified on a Windows host from this environment."
+  fallback_method: web-fallback
+  fallback_note: "Follow OpenAI Codex CLI installation docs for Windows."
+  official_url: https://developers.openai.com/codex
+claude-code:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: claude
+  version_cmd: claude --version
+  verified: false
+  limitation: "Claude Code CLI install not verified on a Windows host from this environment."
+  fallback_method: web-fallback
+  fallback_note: "Follow Anthropic Claude Code installation docs."
+  official_url: https://docs.anthropic.com/en/docs/claude-code
+gemini-cli:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: gemini
+  version_cmd: gemini --version
+  verified: false
+  limitation: "Gemini CLI install not verified on a Windows host from this environment."
+  fallback_method: web-fallback
+  fallback_note: "Install @google/gemini-cli via npm per Google documentation."
+  official_url: https://github.com/google-gemini/gemini-cli

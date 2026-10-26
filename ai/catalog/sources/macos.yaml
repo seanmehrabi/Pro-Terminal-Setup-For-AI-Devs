@@ -1,0 +1,231 @@
+chatgpt:
+  method: brew-cask
+  package: chatgpt
+  detect_app: ChatGPT.app
+  detect_cmd: ""
+  version_cmd: "defaults read /Applications/ChatGPT.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://chatgpt.com
+claude:
+  method: brew-cask
+  package: claude
+  detect_app: Claude.app
+  detect_cmd: ""
+  version_cmd: "defaults read /Applications/Claude.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://claude.ai
+gemini:
+  method: brew-cask
+  package: google-gemini
+  detect_app: Gemini.app
+  detect_cmd: ""
+  version_cmd: "defaults read /Applications/Gemini.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: "Google Antigravity is a separate IDE (brew cask antigravity); see https://antigravity.google/product/antigravity-2"
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://gemini.google.com
+copilot:
+  method: vscode-extension
+  package: GitHub.copilot
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://github.com/features/copilot
+cursor:
+  method: brew-cask
+  package: cursor
+  detect_app: Cursor.app
+  detect_cmd: ""
+  version_cmd: "defaults read /Applications/Cursor.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://cursor.com
+lm-studio:
+  method: brew-cask
+  package: lm-studio
+  detect_app: LM Studio.app
+  detect_cmd: ""
+  version_cmd: "defaults read /Applications/LM Studio.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://lmstudio.ai
+perplexity:
+  method: brew-cask
+  package: perplexity
+  detect_app: Perplexity.app
+  detect_cmd: ""
+  version_cmd: "defaults read /Applications/Perplexity.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: ""
+  fallback_method: web-fallback
+  fallback_note: "Use https://www.perplexity.ai if Homebrew cask is unavailable"
+  official_url: https://www.perplexity.ai
+opencode:
+  method: brew-formula
+  package: opencode
+  detect_app: ""
+  detect_cmd: opencode --version
+  version_cmd: opencode --version
+  verified: true
+  limitation: ""
+  fallback_method: brew-cask
+  fallback_note: "Desktop client via brew install --cask opencode-desktop"
+  official_url: https://opencode.ai
+cline:
+  method: vscode-extension
+  package: saoudrizwan.claude-dev
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://cline.bot
+ollama:
+  method: brew-cask
+  package: ollama-app
+  detect_app: Ollama.app
+  detect_cmd: ollama --version
+  version_cmd: ollama --version
+  verified: true
+  limitation: ""
+  fallback_method: brew-formula
+  fallback_note: "CLI-only via brew install ollama"
+  official_url: https://ollama.com
+vscode:
+  method: brew-cask
+  package: visual-studio-code
+  detect_app: Visual Studio Code.app
+  detect_cmd: code --version
+  version_cmd: "defaults read /Applications/Visual Studio Code.app/Contents/Info.plist CFBundleShortVersionString"
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://code.visualstudio.com
+continue:
+  method: vscode-extension
+  package: Continue.continue
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://continue.dev
+aider:
+  method: pip
+  package: aider-chat
+  detect_app: ""
+  detect_cmd: aider --version
+  version_cmd: aider --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://aider.chat
+open-webui:
+  method: manual
+  package: ""
+  detect_app: ""
+  detect_cmd: ""
+  version_cmd: ""
+  verified: false
+  limitation: "No verified pip package on PyPI for open-webui; use Docker or official install docs at https://docs.openwebui.com/"
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://openwebui.com
+gh:
+  method: brew-formula
+  package: gh
+  detect_app: ""
+  detect_cmd: gh --version
+  version_cmd: gh --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://cli.github.com
+git:
+  method: brew-formula
+  package: git
+  detect_app: ""
+  detect_cmd: git --version
+  version_cmd: git --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://git-scm.com
+python:
+  method: brew-formula
+  package: python3
+  detect_app: ""
+  detect_cmd: python3 --version
+  version_cmd: python3 --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://www.python.org
+node:
+  method: brew-formula
+  package: node
+  detect_app: ""
+  detect_cmd: node --version
+  version_cmd: node --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://nodejs.org
+codex:
+  method: npm
+  package: "@openai/codex"
+  detect_app: ""
+  detect_cmd: codex --version
+  version_cmd: codex --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://developers.openai.com/codex
+claude-code:
+  method: npm
+  package: "@anthropic-ai/claude-code"
+  detect_app: ""
+  detect_cmd: claude --version
+  version_cmd: claude --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://docs.anthropic.com/en/docs/claude-code
+gemini-cli:
+  method: npm
+  package: "@google/gemini-cli"
+  detect_app: ""
+  detect_cmd: gemini --version
+  version_cmd: gemini --version
+  verified: true
+  limitation: ""
+  fallback_method: ""
+  fallback_note: ""
+  official_url: https://github.com/google-gemini/gemini-cli
